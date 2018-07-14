@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Stock Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <div class="jumbotron" style="text-align: center">
+            <h1>Stock Analysis</h1>
+            <p>enter some stuff here</p>
+        </div>
+
+        <!-- Commenting out for now
+        <div class="row">
+            <div class="col-md-12">
+                <h2>Look at all of the current pet pals!</h2>
+                <div id="plot"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <h2><a href="/sendStock">Which Stock would you like to analyze</a></h2>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    -->
+
+    <div class="container">
+        <div class="jumbotron" style="text-align: center">
+            <p>Enter the stock you want tpo search below :</p>
+        </div>
+        <div class="row">
+            <div class="col-md-offset-2 col-md-8">
+                <form method="POST" action="/send" role="form", name="petform">
+                    <div class="form-group">
+                        <label for="inputTicker">Stock Ticker</label>
+                        <input type="text" class="form-control" id="inputTicker" name="stockTicker" placeholder="Ticker">
+                    </div>
+                    <input type="submit" value="submit" class="btn btn-default">
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
