@@ -1,5 +1,7 @@
 # import necessary libraries
 import numpy as np
+from scipy import stats
+import pandas as pd
 
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
@@ -13,44 +15,32 @@ from flask import (
     redirect)
 
 from flask_sqlalchemy import SQLAlchemy
+# PyMySQL 
+import pymysql
 
 #################################################
 # common variables needed across functions
 #################################################
 app = Flask(__name__)
-ticker = ""
 
 #################################################
 # Database Setup 
 #################################################
-##RP-leaving code as such. need to change according to our setup##
-#app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///db/pets.sqlite"
 
-#db = SQLAlchemy(app)
+pymysql.install_as_MySQLdb()
+# Create Engine and Pass in MySQL Connection
+engine = create_engine("mysql://root:Masala007@localhost:3306/stockuser")
+conn = engine.connect()
 
-##<Add class defs>##
-# class Pet(db.Model):
-#   __tablename__ = 'pets'
-
-#   id = db.Column(db.Integer, primary_key=True)
-#    name = db.Column(db.String(64))
-#   type = db.Column(db.String)
-#   age = db.Column(db.Integer)
-
-#   def __repr__(self):
+ # def __repr__(self):
 #        return '<Pet %r>' % (self.name)
 
 #############################
 # Initial setup if any
 #############################
 
-@app.before_first_request
-def setup():
-    # Recreate database each time for demo
-    #db.drop_all()
-    #db.create_all()
-    ticker = ""
-
+#@app.before_first_request
+#def setup():
 
 # create route that renders index.html template
 @app.route("/")
@@ -59,21 +49,9 @@ def home():
 
 
 # Query the database and send the jsonified results
-@app.route("/sendStock", methods=["GET", "POST"])
-def sendStock():
-    #find stock ticker matching what user has entered. For simplicity we will raise an error for now if it 
-    #is not a stock we have data for
-        ticker = request.form["stockTicker"]
-        #sample code left for reference
-        #pet = Pet(name=name, type=pet_type, age=age)
-        #db.session.add(pet)
-        #db.session.commit()
-        #return redirect("http://localhost:5000/", code=302)
-
-    #not sure what we should render here, since we decided tio split the dashboard. We either have to
-    # have a navigation mechanism to go to the different pages, in which case here we just set the ticker value
-    # Otherwise we just render the dashboard for the stock, which will show both
-        return render_template("stock_dashboard.html")
+@app.route("/analyzeStock")
+def analyzeStock():
+    return render_template("stock_dashboard.html")
 
 
 #######################################
@@ -83,23 +61,51 @@ def sendStock():
 
 @app.route("/api/fundamentals")
 def fundamentals():
+    ticker = request.args['ticker']
     #pull results from db for the ticker and return as json object
 
-    #sample code left for reference
-#    results = db.session.query(Pet.type, func.count(Pet.type)).group_by(Pet.type).all()
-#    pet_type = [result[0] for result in results]
-#    age = [result[1] for result in results]
+   #query DB
+    query_string = "SELECT stock_return,pe,pb,fcf FROM stocks WHERE ticker = '"+ticker+"' and stock_return != 0;"
+    data = pd.read_sql(query_string, conn)
 
-    fundamentals_data = {
+    stockreturn = []
+    pe = []
+    pb = []
+    fcf = []
+    for row in data.iterrows():
+        stockreturn.append(row[1].stock_return)
+        pe.append(row[1].pe)
+        pb.append(row[1].pb)
+        fcf.append(row[1].fcf)
+    
+    stockreturnint = [float(i) for i in stockreturn]
+    peint = [float(i) for i in pe]
+    pbint = [float(i) for i in pb]
+    fcfint = [float(i) for i in fcf]
+
+    pe_slope, pe_int, pe_r_value, pe_p_value, pe_std_err = stats.linregress(stockreturnint, peint)
+    pb_slope, pb_int, pb_r_value, pb_p_value, pb_std_err = stats.linregress(stockreturnint, pbint)
+    fcf_slope, fcf_int, fcf_r_value, fcf_p_value, fcf_std_err = stats.linregress(stockreturnint, fcfint)
+
+    regPE = [pe_slope, pe_int, pe_r_value, pe_p_value, pe_std_err]
+    regPB = [pb_slope, pb_int, pb_r_value, pb_p_value, pb_std_err]
+    regFCF = [fcf_slope, fcf_int, fcf_r_value, fcf_p_value, fcf_std_err]
+
+
+    fundamentals_data ={
         "ticker": ticker,
-        "p": 35,
-        "pe": 0.65,
-        "pc": 0.55,
-        "pb": 0.45,
-
-    }
+        "returns": stockreturnint,
+        "pe": peint,
+        "fcf": fcfint,
+        "pb": pbint,
+        "regPE": regPE,
+        "regFCF": regFCF,
+        "regPB": regPB
+        }
 
     return jsonify(fundamentals_data)
+
+
 
 
 @app.route("/api/tradingData")

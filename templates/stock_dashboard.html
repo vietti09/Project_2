@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Pet Form</title>
+    <title>Stock Dashboard</title>
 
     <script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
         crossorigin="anonymous"></script>
@@ -21,35 +21,79 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
         crossorigin="anonymous"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
 
     <body>
-        <div class="container">
-            <div class="jumbotron" style="text-align: center">
-                <h1>Pet Pal</h1>
-                <p>Enter your pet's details below!</p>
-            </div>
-            <div class="row">
-                <div class="col-md-offset-2 col-md-8">
-                    <form method="POST" action="/send" role="form", name="petform">
-                        <div class="form-group">
-                            <label for="inputName">Pet Name</label>
-                            <input type="text" class="form-control" id="inputName" name="petName" placeholder="Name">
-                        </div>
-                        <div class="form-group">
-                            <label for="inputType">Pet Type</label>
-                            <input type="text" class="form-control" id="inputType" name="petType" placeholder="Type">
-                        </div>
-                        <div class="form-group">
-                            <label for="inputAge">Pet Age</label>
-                            <input type="text" class="form-control" id="inputAge" name="petAge" placeholder="Age">
-                        </div>
-                        <input type="submit" value="submit" class="btn btn-default">
-                    </form>
-                </div>
-            </div>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-        </div>
+        <script>
+        // Update the trading chart with new data
+        function drawTradingChart(newData) {
+                  var tradingChart = document.getElementById('tradingChart');
+                  // Plotly.restyle(Bar, 'x', [newdata.x])
+                  //  Plotly.restyle(Bar, 'y', [newdata.y])
+                  }
+        
+        function drawPERegressionChart(response) {
+                    console.log("drawing fundamnetals chart");
+                  //var plot = document.getElementById('fundamentalsChart');
+                  var data = [{"x": response.pe,
+                                "y": response.return,
+                                "type": "scatter"
+                            }];
 
+                    var layout = {
+                                     title: "Fundamentals PE vs Returns",
+                                     xaxis: {
+                                                title: "PE"
+                                            },
+                                    yaxis: {
+                                                    title: "Returns"
+                                            }
+                                };
+                Plotly.newPlot("fundamentalsChart", data, layout);
+                }
+        
+        function drawFundamentals(ticker) {
+                  
+                  var analysisTable = document.getElementById('analysisTable');
+                  //get data
+                  route="/api/fundamentals?ticker="+ticker;
+                  Plotly.d3.json(route, function(error, response) {
+                          if (error) return console.warn(error);
+                          console.log(response);
+                          drawPERegressionChart(response);
+        
+                         });
+                      }
+              
+        // Get new data whenever the dropdown selection changes and draw the dashboard
+        function drawDashboard(ticker) {
+                  console.log(ticker);
+                  drawTradingChart(ticker);
+                  drawFundamentals(ticker);
+                  }
+        </script>
+                    
+    
+        <select id="selStock" onchange="drawDashboard(this.value)">
+                <option value="A">A</option>
+                <option value="AAPL">AAPL</option>
+                <option value="AMD">AMD</option>
+                <option value="ARQL">ARQL</option>
+                <option value="AU">AU</option>
+                <option value="BHP">BHP</option>
+                <option value="BLIN">BLIN</option>
+                <option value="BOSC">BOSC</option>
+                <option value="BP">BP</option>
+                <option value="CVX">CVX</option>
+        </select>
+    
+        
+        <div id="tradingChart"></div>
+        <div id="fundamentalsChart"></div>
+        <div id="analysisTable"></div>
+        
     </body>
 
 </html>

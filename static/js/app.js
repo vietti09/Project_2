@@ -1,4 +1,7 @@
-function buildPlot() {
+function buildPlot(ticker) {
+
+    console.log(ticker);
+    
     /* data route */
   var url = "/api/pals";
   Plotly.d3.json(url, function(error, response) {
