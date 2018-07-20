@@ -34,16 +34,41 @@
                   //  Plotly.restyle(Bar, 'y', [newdata.y])
                   }
         
+        function calculateRegressionY(x,slope,intercept){
+            var y = slope*x + intercept;
+            return y;
+        }
+
         function drawPERegressionChart(response) {
                     console.log("drawing fundamnetals chart");
                   //var plot = document.getElementById('fundamentalsChart');
-                  var data = [{"x": response.pe,
-                                "y": response.return,
+                  var trace1 = {'x': response.pe,
+                                'y': response.returns,
+                                'mode': "markers",
                                 "type": "scatter"
-                            }];
+                            };
+                    
+                    var PEs = response.pe;
+                    var x1 = Math.max.apply(null, PEs);
+                    var x2 = Math.min.apply(null, PEs);
+                    var slope = response.regPE[0];
+                    var intercept = response.regPE[1];
 
+                    var y1 = calculateRegressionY(x1,slope,intercept);
+                    var y2 = calculateRegressionY(x2,slope,intercept);
+                    var lineXdata = [x1,x2];
+                    var lineYdata = [y1,y2];
+
+                    var trace2 = {"x": lineXdata,
+                                "y": lineYdata,
+                                "mode": 'line',
+                                "type": "scatter"
+                            };
+                    
+                    var data = [trace1,trace2];
+                    console.log(data);
                     var layout = {
-                                     title: "Fundamentals PE vs Returns",
+                                     title: "Price-to-Earnings vs Returns",
                                      xaxis: {
                                                 title: "PE"
                                             },
@@ -51,9 +76,145 @@
                                                     title: "Returns"
                                             }
                                 };
-                Plotly.newPlot("fundamentalsChart", data, layout);
+                Plotly.newPlot("peRegChart", data, layout);
                 }
-        
+
+        function drawPBRegressionChart(response) {
+
+                    var trace1 = {'x': response.pb,
+                                'y': response.returns,
+                                'mode': "markers",
+                                "type": "scatter"
+                            };
+                    
+                    var PBs = response.pb;
+                    var x1 = Math.max.apply(null, PBs);
+                    var x2 = Math.min.apply(null, PBs);
+                    var slope = response.regPB[0];
+                    var intercept = response.regPB[1];
+
+                    var y1 = calculateRegressionY(x1,slope,intercept);
+                    var y2 = calculateRegressionY(x2,slope,intercept);
+                    var lineXdata = [x1,x2];
+                    var lineYdata = [y1,y2];
+
+                    var trace2 = {"x": lineXdata,
+                                "y": lineYdata,
+
+                                "mode": 'line',
+                                "type": "scatter"
+                            };
+                    
+                    var data = [trace1,trace2];
+                    var layout = {
+                                    title: "Price-to-Bookvalue vs Returns",
+                                    xaxis: {title: "PB"},
+                                    yaxis: {title: "Returns"}
+                                };
+                Plotly.newPlot("pbRegChart", data, layout);
+                }
+
+        function drawFCFRegressionChart(response) {
+                    var trace1 = {'x': response.fcf,
+                                'y': response.returns,
+                                'mode': "markers",
+                                "type": "scatter"
+                            };
+                    
+                    var FCFs = response.fcf;
+                    var x1 = Math.max.apply(null, FCFs);
+                    var x2 = Math.min.apply(null, FCFs);
+                    var slope = response.regFCF[0];
+                    var intercept = response.regFCF[1];
+
+                    var y1 = calculateRegressionY(x1,slope,intercept);
+                    var y2 = calculateRegressionY(x2,slope,intercept);
+                    var lineXdata = [x1,x2];
+                    var lineYdata = [y1,y2];
+
+                    var trace2 = {"x": lineXdata,
+                                "y": lineYdata,
+                                "mode": 'line',
+                                "type": "scatter"
+                            };
+                    
+                    var data = [trace1,trace2];
+                    var layout = {
+                                    title: "Free Cashflow vs Returns",
+                                    xaxis: {title: "FCF"},
+                                    yaxis: {title: "Returns"}
+                                };
+                Plotly.newPlot("fcfRegChart", data, layout);
+                }
+
+        function drawAnalysisTable(response) {
+
+                    console.log("before getting regPE");
+                    console.log(response.regPE[0]);
+                    console.log("after printing regPE");
+
+                    //getting data
+                    var dataTab = [
+                        ["slope","intercept","R value","P value","STD error"],
+                        [response.regPE[0],response.regPE[1], response.regPE[2], response.regPE[3], response.regPE[4]],
+                        [response.regPB[0],response.regPB[1], response.regPB[2], response.regPB[3], response.regPB[4]],
+                        [response.regFCF[0],response.regFCF[1], response.regFCF[2], response.regFCF[3], response.regFCF[4]]
+                    ];
+
+                    console.log("data for dataTab[0][0] is: ", dataTab[0][0])
+                    console.log("data for dataTab[0][1] is: ", dataTab[0][1])
+                    console.log("data for dataTab[0][2] is: ", dataTab[0][2])
+                    console.log("data for dataTab[0][3] is: ", dataTab[0][3])
+                    console.log("data for dataTab[0][4] is: ", dataTab[0][4])
+
+                    //body reference 
+                    console.log("before body decl");
+
+                    //getElementsByTagName("analysisTable")[0]
+                    var body = document.getElementsByTagName("body")[0];
+
+                    console.log("print body")
+                    console.log(body);
+                    console.log("-----------")
+                    // create elements <table> and a <tbody>
+                    var tbl     = document.createElement("table");
+                    var tblBody = document.createElement("tbody");
+                    console.log("after tblBody")
+                    // cells creation
+                    for (var j = 0; j <= 3; j++) {
+                        // table row creation
+                        var row = document.createElement("tr");
+
+                        for (var i = 0; i < 5; i++) {
+                            // create element <td> and text node 
+                            //Make text node the contents of <td> element
+                            // put <td> at end of the table row
+                            var cell = document.createElement("td");  
+                            console.log("going to print cell data") 
+                            console.log(dataTab[j][i]) 
+                            console.log("did it work")
+                            var cellText = document.createTextNode(dataTab[j][i]); 
+                            //console.log("before appendChild");
+                            cell.appendChild(cellText);
+                            //console.log("after appendChild");
+
+                            row.appendChild(cell);
+                            //console.log("hellow after row.appendChild")
+                        }
+
+                        //row added to end of table body
+                        tblBody.appendChild(row);
+                    }
+
+                    // append the <tbody> inside the <table>
+                    tbl.appendChild(tblBody);
+                    // put <table> in the <body>
+                    body.appendChild(tbl);
+                    // tbl border attribute to 
+                    tbl.setAttribute("border", "2");
+                    }
+
+
         function drawFundamentals(ticker) {
                   
                   var analysisTable = document.getElementById('analysisTable');
@@ -63,6 +224,9 @@
                           if (error) return console.warn(error);
                           console.log(response);
                           drawPERegressionChart(response);
+                          drawPBRegressionChart(response);
+                          drawFCFRegressionChart(response);
+                          drawAnalysisTable(response);
         
                          });
                       }
@@ -73,26 +237,60 @@
                   drawTradingChart(ticker);
                   drawFundamentals(ticker);
                   }
+
+        drawDashboard("A");
         </script>
-                    
-    
-        <select id="selStock" onchange="drawDashboard(this.value)">
-                <option value="A">A</option>
-                <option value="AAPL">AAPL</option>
-                <option value="AMD">AMD</option>
-                <option value="ARQL">ARQL</option>
-                <option value="AU">AU</option>
-                <option value="BHP">BHP</option>
-                <option value="BLIN">BLIN</option>
-                <option value="BOSC">BOSC</option>
-                <option value="BP">BP</option>
-                <option value="CVX">CVX</option>
-        </select>
-    
         
-        <div id="tradingChart"></div>
-        <div id="fundamentalsChart"></div>
-        <div id="analysisTable"></div>
+        <div class="input-group">
+            <div class="row">
+                <div class="col-md-12">
+                    <h1>Select a stock</h1>
+                    <select id="selStock" onchange="drawDashboard(this.value)">
+                        <option value="A">A</option>
+                        <option value="AAPL">AAPL</option>
+                        <option value="AMD">AMD</option>
+                        <option value="ARQL">ARQL</option>
+                        <option value="AU">AU</option>
+                        <option value="BHP">BHP</option>
+                        <option value="BLIN">BLIN</option>
+                        <option value="BOSC">BOSC</option>
+                        <option value="BP">BP</option>
+                        <option value="CVX">CVX</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    
+        <div class="row">
+            <div class="col-md-12" style="text-align: center">
+                <h2>Current trading information</h2>
+                <div id="tradingChart"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12" style="text-align: center">
+                <h2>Fundamentals Analysis</h2>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div id="peRegChart"></div>
+            </div>
+            <div class="col-md-6">
+                <div id="pbRegChart"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div id="fcfRegChart"></div>
+            </div>
+            <div class="col-md-6">
+                <div id="analysisTable"></div>
+            </div>
+        </div>
         
     </body>
 

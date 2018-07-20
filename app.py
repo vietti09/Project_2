@@ -1,5 +1,6 @@
 # import necessary libraries
 import numpy as np
+from numpy.polynomial.polynomial import polyfit
 from scipy import stats
 import pandas as pd
 
@@ -83,14 +84,14 @@ def fundamentals():
     pbint = [float(i) for i in pb]
     fcfint = [float(i) for i in fcf]
 
-    pe_slope, pe_int, pe_r_value, pe_p_value, pe_std_err = stats.linregress(stockreturnint, peint)
-    pb_slope, pb_int, pb_r_value, pb_p_value, pb_std_err = stats.linregress(stockreturnint, pbint)
-    fcf_slope, fcf_int, fcf_r_value, fcf_p_value, fcf_std_err = stats.linregress(stockreturnint, fcfint)
+    pe_slope, pe_int, pe_r_value, pe_p_value, pe_std_err = stats.linregress(peint, stockreturnint)
+    pb_slope, pb_int, pb_r_value, pb_p_value, pb_std_err = stats.linregress(pbint, stockreturnint)
+    fcf_slope, fcf_int, fcf_r_value, fcf_p_value, fcf_std_err = stats.linregress(fcfint, stockreturnint)
 
     regPE = [pe_slope, pe_int, pe_r_value, pe_p_value, pe_std_err]
     regPB = [pb_slope, pb_int, pb_r_value, pb_p_value, pb_std_err]
     regFCF = [fcf_slope, fcf_int, fcf_r_value, fcf_p_value, fcf_std_err]
-
+    
 
     fundamentals_data ={
         "ticker": ticker,
